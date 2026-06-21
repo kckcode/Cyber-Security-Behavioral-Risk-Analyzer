@@ -1,0 +1,42 @@
+# ---------------- ANALYTICS DASHBOARD ----------------
+else:
+
+    st.header('Analytics Dashboard')
+
+    file_path = 'collected_data.csv'
+
+    if not os.path.exists(file_path):
+        st.warning('No data collected yet. Complete some surveys to see analytics.')
+    else:
+        df = pd.read_csv(file_path)
+
+        st.subheader('Dataset Overview')
+        st.write(f'Total Responses: {len(df)}')
+
+        # Risk Distribution
+        if 'risk_label' in df.columns:
+            risk_counts = df['risk_label'].value_counts()
+            st.subheader('Risk Level Distribution')
+            st.bar_chart(risk_counts)
+
+            # Percentages
+            total = len(df)
+            high_pct = (risk_counts.get('High', 0) / total * 100)
+            med_pct = (risk_counts.get('Medium', 0) / total * 100)
+            low_pct = (risk_counts.get('Low', 0) / total * 100)
+            st.write(f'High Risk: {high_pct:.1f}% | Medium Risk: {med_pct:.1f}% | Low Risk: {low_pct:.1f}%')
+
+        # Feature Averages
+        feature_cols = [col for col in features if col in df.columns]
+        if feature_cols:
+            st.subheader('Average Behavioral Scores')
+            avg_scores = df[feature_cols].mean()
+            st.bar_chart(avg_scores)
+
+        # Trends over time (if timestamp exists)
+        if 'timestamp' in df.columns:
+            df['timestamp'] = pd.to_datetime(df['timestamp'])
+            df['date'] = df['timestamp'].dt.date
+            daily_counts = df.groupby('date').size()
+            st.subheader('Response Trends Over Time')
+            st.line_chart(daily_counts)
